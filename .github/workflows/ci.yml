@@ -1,0 +1,61 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify userscript header
+        run: head -1 dist/sentinel-userscript.user.js | grep -q '// ==UserScript=='
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          TAG="build-$(date -u +'%Y.%m.%d-%H%M%S')"
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+          echo "DATE=$(date -u +'%B %d, %Y at %H:%M:%S UTC')" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG }}
+          name: Build - ${{ steps.tag.outputs.DATE }}
+          body: |
+            ## Microsoft Sentinel & Defender: Threat Hunting Queries
+
+            **Built from** `${{ github.sha }}` on ${{ steps.tag.outputs.DATE }}
+
+            ### Installation
+            1. Install [Tampermonkey](https://www.tampermonkey.net/) in your browser
+            2. Click **sentinel-userscript.user.js** below to auto-install in Tampermonkey
+            3. Open Tampermonkey dashboard → Utilities → Import from file
+            4. Select the downloaded `.js` file
+
+            Or install directly from the raw URL:
+            ```
+            https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.TAG }}/sentinel-userscript.user.js
+            ```
+          files: dist/sentinel-userscript.user.js
+          generate_release_notes: true

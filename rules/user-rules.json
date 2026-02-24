@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Cloud App File Activity Summary",
+    "category": "Cloud Apps",
+    "description": "Summarize file modifications, deletions, and uploads per user and application from CloudAppEvents.",
+    "query": "CloudAppEvents\n| search \"\"\n| where ActionType in (\"FileModified\", \"FileDeleted\", \"FileUploaded\")\n| extend\n    UpdatedFiles = iff(ActionType == \"FileModified\", ObjectName, \"\"),\n    DeletedFiles = iff(ActionType == \"FileDeleted\", ObjectName, \"\"),\n    CreatedFiles = iff(ActionType == \"FileUploaded\", ObjectName, \"\")\n| summarize\n    UpdatedCount = countif(ActionType == \"FileModified\"),\n    DeletedCount = countif(ActionType == \"FileDeleted\"),\n    CreatedCount = countif(ActionType == \"FileUploaded\"),\n    UniqueFiles = dcount(ObjectId),\n    UpdatedFilesList = make_set_if(UpdatedFiles, isnotempty(UpdatedFiles)),\n    DeletedFilesList = make_set_if(DeletedFiles, isnotempty(DeletedFiles)),\n    CreatedFilesList = make_set_if(CreatedFiles, isnotempty(CreatedFiles))\n    by AccountDisplayName, Application\n| where UpdatedCount > 0 or DeletedCount > 0 or CreatedCount > 0\n| extend TotalActions = UpdatedCount + DeletedCount + CreatedCount\n| project-reorder\n    AccountDisplayName,\n    Application,\n    TotalActions,\n    UpdatedCount,\n    UpdatedFilesList,\n    DeletedCount,\n    DeletedFilesList,\n    CreatedCount,\n    CreatedFilesList,\n    UniqueFiles\n| sort by TotalActions desc"
+  },
+  {
+    "name": "Email Subject Hunting with URL Clicks",
+    "category": "Cloud Apps",
+    "description": "Search emails by subject keyword and correlate with URL click events per recipient.",
+    "query": "let SubjectKeyword = \"\"; // <= FILTER\nEmailEvents\n| where Subject contains SubjectKeyword\n| project EmailTimestamp = Timestamp, Subject, SenderFromAddress, RecipientEmailAddress, NetworkMessageId\n| join kind=leftouter (\n    EmailUrlInfo\n    | project NetworkMessageId, Url, UrlLocation\n) on NetworkMessageId\n| join kind=leftouter (\n    UrlClickEvents\n    | project NetworkMessageId, ClickTimestamp = Timestamp, ClickedUrl = Url, IPAddress, ActionType, IsClickedThrough\n) on NetworkMessageId\n| summarize\n    EmailCount = count(),\n    Subjects = make_set(Subject),\n    Senders = make_set(SenderFromAddress),\n    UrlList = make_set(Url),\n    ClickedUrls = make_set(ClickedUrl),\n    IPAddresses = make_set(IPAddress),\n    LastEmailTimestamp = max(EmailTimestamp),\n    LastClickTimestamp = max(ClickTimestamp)\nby RecipientEmailAddress\n| project\n    LastEmailTimestamp,\n    LastClickTimestamp,\n    RecipientEmailAddress,\n    EmailCount,\n    Subjects,\n    Senders,\n    UrlList,\n    ClickedUrls,\n    IPAddresses"
+  },
+  {
+    "name": "LOLBin Execution by Device",
+    "category": "Endpoint",
+    "description": "Hunt for living-off-the-land binary executions on a specific device over the last 7 days.",
+    "query": "let deviceFilter = \"\"; // <= FILTER\nlet lolbins = dynamic([\n    \"at.exe\", \"bitsadmin.exe\", \"certutil.exe\", \"cmd.exe\", \"cmstp.exe\", \"cscript.exe\",\n    \"mshta.exe\", \"powershell.exe\", \"regsvr32.exe\", \"rundll32.exe\", \"sc.exe\", \"wmic.exe\",\n    \"wscript.exe\", \"msiexec.exe\", \"forfiles.exe\", \"schtasks.exe\", \"regsvcs.exe\", \"regasm.exe\",\n    \"odbcconf.exe\", \"installutil.exe\", \"pcalua.exe\", \"csc.exe\", \"vbc.exe\", \"powershell.exe\", \"advanced_ip_scanner.exe\"\n]);\nDeviceProcessEvents\n| where TimeGenerated > ago(7d)\n| where DeviceName == deviceFilter\n| where FileName in~ (lolbins)\n| project-reorder\n    TimeGenerated,\n    DeviceName,\n    DeviceId,\n    FileName,\n    ProcessCommandLine,\n    InitiatingProcessFileName,\n    InitiatingProcessCommandLine,\n    AccountName,\n    AccountDomain,\n    ProcessId,\n    FolderPath,\n    FileSize,\n    SHA1,\n    SHA256,\n    MD5,\n    ProcessVersionInfoCompanyName,\n    ProcessVersionInfoProductName,\n    ProcessVersionInfoProductVersion,\n    ProcessIntegrityLevel,\n    ProcessTokenElevation"
+  },
+  {
+    "name": "Identity Failed Logon Summary",
+    "category": "Identity",
+    "description": "Summarize failed logon events from IdentityLogonEvents with source/destination device details.",
+    "query": "IdentityLogonEvents\n| where LogonType contains \"Failed logon\"\n| where AccountName has_any (\"\")\n| where DestinationDeviceName has_any (\"\")\n| extend AdditionalFields_FROM_DEVICE = parse_json(AdditionalFields)[\"FROM.DEVICE\"]\n| extend AdditionalFields_TO_DEVICE = parse_json(AdditionalFields)[\"TO.DEVICE\"]\n| summarize\n    TotalFailures = count(),\n    DistinctTargets = dcount(AccountName),\n    FailureCodes = make_set(ActionType),\n    LastAttempt = max(Timestamp),\n    AdditionalFields_FROM_DEVICE = make_set(AdditionalFields_FROM_DEVICE),\n    AdditionalFields_TO_DEVICE = make_set(AdditionalFields_TO_DEVICE)\n    by AccountName, FailureReason, LogonType, DestinationDeviceName\n| project\n    ResponsibleAccount = AccountName,\n    LogonType,\n    TotalFailures,\n    DestinationDeviceName,\n    DistinctTargets,\n    FailureCodes,\n    FailureReason,\n    LastAttempt,\n    AdditionalFields_FROM_DEVICE,\n    AdditionalFields_TO_DEVICE"
+  },
+  {
+    "name": "4688 Hunting via WindowsEvent",
+    "category": "Endpoint",
+    "description": "Extract process creation details from the WindowsEvent table (Event ID 4688).",
+    "query": "WindowsEvent\n| search \"\"\n| summarize\n  NewProcessName = make_set(EventData.NewProcessName),\n  ParentProcessName = make_set(EventData.ParentProcessName),\n  LogonID = make_set(EventData.TargetLogonId),\n  first_time = min(TimeGenerated),\n  last_time = max(TimeGenerated),\n  event_count=count()\nby Computer, CommandLine = tostring(EventData.CommandLine), Caller_User_Name = tostring(EventData.TargetUserName)"
+  },
+  {
+    "name": "4688 Hunting via SecurityEvent",
+    "category": "Endpoint",
+    "description": "Extract process creation details from the SecurityEvent table (Event ID 4688).",
+    "query": "SecurityEvent\n| where EventID == 4688\n| search \"\"\n| extend Caller_User_Name = tostring(TargetUserName)\n| extend LogonID = tostring(TargetLogonId)\n| summarize\n    NewProcessNames = make_set(NewProcessName),\n    ParentProcessNames = make_set(ParentProcessName),\n    LogonIDs = make_set(LogonID),\n    first_time = min(TimeGenerated),\n    last_time = max(TimeGenerated),\n    event_count = count()\n    by Computer, CommandLine, Caller_User_Name\n| project first_time, last_time, Computer, Caller_User_Name, ParentProcessNames, NewProcessNames, CommandLine, event_count"
+  },
+  {
+    "name": "4688 Hunting via MDE Tables",
+    "category": "Endpoint",
+    "description": "Union all MDE Device tables (DeviceEvents, DeviceProcessEvents, DeviceNetworkEvents, DeviceFileEvents, DeviceRegistryEvents, DeviceLogonEvents, DeviceImageLoadEvents) for broad hunting.",
+    "query": "union DeviceEvents, DeviceProcessEvents, DeviceNetworkEvents, DeviceFileEvents, DeviceRegistryEvents, DeviceLogonEvents, DeviceImageLoadEvents\n| search \"\"\n| where TimeGenerated > ago(7d)\n| sort by TimeGenerated desc"
+  },
+  {
+    "name": "Sign-in Logs with Threat Intel & Device Posture",
+    "category": "Identity",
+    "description": "Correlate interactive and non-interactive sign-ins with threat intelligence, device posture, and VirusTotal links.",
+    "query": "let logTypeFilter = \"All\"; // \"All\", \"Interactive\", or \"Non-Interactive\"\nlet searchKeyword = \"\"; // <= FILTER\nlet endpointFilter = \"\"; // <= FILTER by device name\nlet timeRange = 14d;\nlet ThreatData = ThreatIntelIndicators\n| where isnotempty(ObservableValue)\n| extend NetworkIP = ObservableValue\n| extend Description = coalesce(tostring(Data.description), Tags, \"Threat Indicator\")\n| summarize arg_max(TimeGenerated, Description, Confidence) by NetworkIP;\nlet interactive = SigninLogs\n| where logTypeFilter in (\"All\", \"Interactive\")\n| where TimeGenerated > ago(timeRange)\n| search searchKeyword\n| extend DeviceName = tostring(DeviceDetail.displayName),\n         Browser = tostring(DeviceDetail.browser),\n         OS = tostring(DeviceDetail.operatingSystem),\n         IsManaged = tostring(DeviceDetail.isManaged),\n         AuthRequirement = tostring(AuthenticationRequirement),\n         AuthDetails = tostring(AuthenticationDetails),\n         City = tostring(parse_json(LocationDetails).city),\n         Country = tostring(parse_json(LocationDetails).countryOrRegion)\n| extend SignInType = \"Interactive\";\nlet nonInteractive = AADNonInteractiveUserSignInLogs\n| where logTypeFilter in (\"All\", \"Non-Interactive\")\n| where TimeGenerated > ago(timeRange)\n| search searchKeyword\n| extend DeviceName = \"N/A\", Browser = \"N/A\", OS = \"N/A\", IsManaged = \"N/A\",\n         AuthRequirement = tostring(AuthenticationRequirement),\n         AuthDetails = tostring(AuthenticationDetails),\n         City = tostring(parse_json(LocationDetails).city),\n         Country = tostring(parse_json(LocationDetails).countryOrRegion)\n| extend SignInType = \"Non-Interactive\";\nunion interactive, nonInteractive\n| where isnotempty(AppDisplayName)\n| lookup kind=leftouter ThreatData on $left.IPAddress == $right.NetworkIP\n| extend\n    IPReputation = iff(isempty(Description), \"Clean/Unknown\", Description),\n    VirusTotalLink = strcat(\"https://www.virustotal.com/gui/ip-address/\", IPAddress)\n| extend DevicePosture = case(\n    SignInType == \"Non-Interactive\", \"Background Process\",\n    IsManaged =~ \"true\", \"Managed Device\",\n    IsManaged =~ \"false\", \"Unmanaged\",\n    isempty(IsManaged) or IsManaged == \"\", \"No Device Info\",\n    \"Unknown\"\n)\n| where isempty(endpointFilter) or DeviceName contains endpointFilter\n| project\n    TimeGenerated,\n    UserPrincipalName,\n    SignInType,\n    DevicePosture,\n    DeviceName,\n    AuthRequirement,\n    AuthDetails,\n    ResultType,\n    ResultDescription,\n    AppDisplayName,\n    IPAddress,\n    City,\n    Country,\n    UserAgent,\n    VirusTotalLink,\n    IPReputation,\n    OS,\n    Browser\n| sort by TimeGenerated desc"
+  }
+]

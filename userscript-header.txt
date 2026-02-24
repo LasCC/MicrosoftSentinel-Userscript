@@ -1,0 +1,18 @@
+// ==UserScript==
+// @name         Microsoft Sentinel & Defender: Threat Hunting Queries
+// @version      1.0.0
+// @description  Custom threat hunting query menu for MS Sentinel & Defender
+// @author       LasCC
+// @match        *://security.microsoft.com/*
+// @match        *://*.reactblade.portal.azure.net/*
+// @downloadURL  https://raw.githubusercontent.com/LasCC/MicrosoftSentinel-Userscript/main/dist/sentinel-userscript.user.js
+// @updateURL    https://raw.githubusercontent.com/LasCC/MicrosoftSentinel-Userscript/main/dist/sentinel-userscript.user.js
+// @grant        GM_xmlhttpRequest
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_deleteValue
+// @grant        unsafeWindow
+// @connect      api.github.com
+// @connect      raw.githubusercontent.com
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=security.microsoft.com
+// ==/UserScript==
