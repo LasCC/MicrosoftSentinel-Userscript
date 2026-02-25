@@ -1,9 +1,11 @@
-import { CSS_PREFIX, TABS } from '../config.ts';
+import { CSS_PREFIX, TABS, REPOS } from '../config.ts';
 import type { HuntingRule, RuleSourceId, TabId } from '../types.ts';
 import {
   getRulesForSource,
   getPinnedRules,
   searchRules,
+  getCategoriesForSource,
+  filterByCategory,
   getTotalRuleCount,
   ensureRepoLoaded,
 } from '../core/query-manager.ts';
@@ -11,6 +13,7 @@ import { getRepoLoadState } from '../core/public-repos.ts';
 import { createSearch, type SearchComponent } from './search.ts';
 import { createTabs, type TabsComponent } from './tabs.ts';
 import { createQueryList, type QueryListComponent } from './query-list.ts';
+import { createCategoryFilter, type CategoryFilterComponent } from './category-filter.ts';
 
 export interface PopupComponent {
   readonly element: HTMLDivElement;
@@ -66,6 +69,9 @@ export function createPopup(onClose: () => void): PopupComponent {
   // ── Tabs ──
   const tabs: TabsComponent = createTabs(handleTabChange);
 
+  // ── Category Filter ──
+  const categoryFilter: CategoryFilterComponent = createCategoryFilter(handleCategoryChange);
+
   // ── Query List ──
   const queryList: QueryListComponent = createQueryList();
 
@@ -73,6 +79,7 @@ export function createPopup(onClose: () => void): PopupComponent {
   popup.appendChild(header);
   popup.appendChild(search.element);
   popup.appendChild(tabs.element);
+  popup.appendChild(categoryFilter.element);
   popup.appendChild(queryList.element);
 
   // ── Keyboard ──
@@ -89,8 +96,14 @@ export function createPopup(onClose: () => void): PopupComponent {
     renderCurrentTab(query);
   }
 
+  function handleCategoryChange(_category: string | null): void {
+    renderCurrentTab(search.getQuery());
+  }
+
   function handleTabChange(_tabId: TabId): void {
     search.reset();
+    categoryFilter.reset();
+    // Categories will be populated when renderCurrentTab runs
   }
 
   function renderCurrentTab(searchQuery = ''): void {
@@ -99,6 +112,7 @@ export function createPopup(onClose: () => void): PopupComponent {
     if (!tabDef) return;
 
     if (activeTab === 'pinned') {
+      categoryFilter.setCategories([]);
       const pinned = getPinnedRules();
       const filtered = searchQuery
         ? searchRules(pinned, searchQuery)
@@ -112,21 +126,24 @@ export function createPopup(onClose: () => void): PopupComponent {
     }
 
     // Lazy-load repo rules on first tab visit
-    if (activeTab === 'reprise99' || activeTab === 'bertjanp') {
-      const state = getRepoLoadState(activeTab);
+    const isRepoTab = REPOS.some((r) => r.id === activeTab);
+    if (isRepoTab) {
+      const state = getRepoLoadState(activeTab as RuleSourceId);
       if (state === 'idle' || state === 'loading') {
+        categoryFilter.setCategories([]);
         queryList.showLoading();
-        void ensureRepoLoaded(activeTab).then(() => {
+        void ensureRepoLoaded(activeTab as RuleSourceId).then(() => {
           if (tabs.getActiveTab() === activeTab) {
             updateCount();
-            renderSourceTab(activeTab, searchQuery);
+            renderSourceTab(activeTab as RuleSourceId, searchQuery);
           }
         });
         return;
       }
       if (state === 'error') {
-        const rules = getRulesForSource(activeTab);
+        const rules = getRulesForSource(activeTab as RuleSourceId);
         if (rules.length === 0) {
+          categoryFilter.setCategories([]);
           queryList.showEmpty('Failed to load rules. Try again later.');
           return;
         }
@@ -139,7 +156,15 @@ export function createPopup(onClose: () => void): PopupComponent {
   }
 
   function renderSourceTab(sourceId: RuleSourceId, searchQuery: string): void {
-    const rules = getRulesForSource(sourceId);
+    // Populate category chips for this source
+    const categories = getCategoriesForSource(sourceId);
+    categoryFilter.setCategories(categories);
+
+    let rules = getRulesForSource(sourceId);
+    const selectedCategory = categoryFilter.getSelected();
+    if (selectedCategory) {
+      rules = filterByCategory(rules, selectedCategory);
+    }
     const filtered = searchQuery ? searchRules(rules, searchQuery) : rules;
     queryList.render(filtered, sourceId);
   }

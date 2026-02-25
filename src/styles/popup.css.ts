@@ -152,6 +152,56 @@ export const popupStyles = `
     border-bottom-color: var(--colorTextBrand, #0078d4);
   }
 
+  /* ── Category Filter ── */
+
+  .${CSS_PREFIX}-category-filter {
+    display: flex;
+    gap: 4px;
+    padding: 6px 14px;
+    border-bottom: 1px solid var(--colorDividerPrimary, #f3f2f1);
+    flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .${CSS_PREFIX}-category-filter::-webkit-scrollbar {
+    display: none;
+  }
+
+  .${CSS_PREFIX}-category-chip {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--colorTextSecondary, #646464);
+    background: var(--colorContainerBackgroundSecondary, #f3f2f1);
+    border: 1px solid var(--colorContainerBorderPrimary, #e1dfdd);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: color 0.12s, background 0.12s, border-color 0.12s;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .${CSS_PREFIX}-category-chip:hover {
+    color: var(--colorTextPrimary, #292827);
+    background: var(--colorControlBackgroundHover, #e8e8e8);
+    border-color: var(--colorControlBorderSecondary, #d6d6d6);
+  }
+
+  .${CSS_PREFIX}-category-chip--active {
+    color: var(--colorButtonForegroundPrimary, #fff);
+    background: var(--colorButtonBackgroundPrimary, #0078d4);
+    border-color: var(--colorButtonBackgroundPrimary, #0078d4);
+  }
+
+  .${CSS_PREFIX}-category-chip--active:hover {
+    color: var(--colorButtonForegroundPrimary, #fff);
+    background: var(--colorButtonBackgroundHover, #106ebe);
+    border-color: var(--colorButtonBackgroundHover, #106ebe);
+  }
+
   /* ── Query List ── */
 
   .${CSS_PREFIX}-query-list {

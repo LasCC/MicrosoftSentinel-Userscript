@@ -11,13 +11,13 @@ export const STORAGE_KEYS = {
   USER_RULES: 'shq_user_rules',
 } as const;
 
-// ── Cache TTL (1 hour in ms) ──
-export const CACHE_TTL_MS = 60 * 60 * 1000;
+// ── Cache TTL (12 hours in ms) ──
+export const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 
 // ── GitHub Repo Configs ──
 
 export interface RepoConfig {
-  readonly id: 'reprise99' | 'bertjanp';
+  readonly id: 'reprise99' | 'bertjanp' | 'falconfriday';
   readonly owner: string;
   readonly repo: string;
   readonly branch: string;
@@ -26,7 +26,7 @@ export interface RepoConfig {
   /** File extension to match */
   readonly extension: '.kql' | '.md';
   /** Parser identifier */
-  readonly parser: 'kql-file' | 'markdown-sentinel';
+  readonly parser: 'kql-file' | 'markdown-sentinel' | 'markdown-falconfriday';
   /** Human-readable label shown in the tab */
   readonly label: string;
 }
@@ -52,6 +52,16 @@ export const REPOS: readonly RepoConfig[] = [
     parser: 'markdown-sentinel',
     label: 'Bert-JanP',
   },
+  {
+    id: 'falconfriday',
+    owner: 'FalconForceTeam',
+    repo: 'FalconFriday',
+    branch: 'main',
+    basePath: '',
+    extension: '.md',
+    parser: 'markdown-falconfriday',
+    label: 'FalconFriday',
+  },
 ] as const;
 
 /** Max concurrent file fetches to avoid flooding */
@@ -65,6 +75,7 @@ export const TABS: readonly TabDefinition[] = [
   { id: 'user', label: 'User Rules', sourceId: 'user' },
   { id: 'reprise99', label: 'Reprise99', sourceId: 'reprise99' },
   { id: 'bertjanp', label: 'Bert-JanP', sourceId: 'bertjanp' },
+  { id: 'falconfriday', label: 'FalconFriday', sourceId: 'falconfriday' },
   { id: 'pinned', label: 'Pinned' },
 ] as const;
 

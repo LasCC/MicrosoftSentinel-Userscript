@@ -9,7 +9,7 @@ export interface HuntingRule {
 
 // ── Rule Sources ──
 
-export type RuleSourceId = 'user' | 'reprise99' | 'bertjanp';
+export type RuleSourceId = 'user' | 'reprise99' | 'bertjanp' | 'falconfriday';
 
 export interface RuleSource {
   readonly id: RuleSourceId;
@@ -88,7 +88,7 @@ export interface CachedData<T> {
 
 // ── Tab System ──
 
-export type TabId = 'user' | 'reprise99' | 'bertjanp' | 'pinned';
+export type TabId = 'user' | 'reprise99' | 'bertjanp' | 'falconfriday' | 'pinned';
 
 export interface TabDefinition {
   readonly id: TabId;

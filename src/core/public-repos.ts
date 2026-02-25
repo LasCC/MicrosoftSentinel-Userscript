@@ -161,6 +161,8 @@ async function fetchAndParseFile(
       return parseKqlFile(content, entry.path);
     case 'markdown-sentinel':
       return parseMarkdownSentinel(content, entry.path);
+    case 'markdown-falconfriday':
+      return parseMarkdownFalconFriday(content, entry.path);
     default:
       return null;
   }
@@ -247,6 +249,56 @@ function parseMarkdownSentinel(content: string, filePath: string): HuntingRule[]
   }
 
   return rules.length > 0 ? rules : null;
+}
+
+/**
+ * Parse a .md file from FalconForceTeam/FalconFriday.
+ * Structure: # Title, ## Detection description, ## Detection section with
+ * fenced code blocks using ```C# language tag containing KQL queries.
+ * Category is extracted from the filename suffix (e.g. -Win, -Azure, -AWS).
+ */
+function parseMarkdownFalconFriday(content: string, filePath: string): HuntingRule | null {
+  const titleMatch = content.match(/^#\s+(.+)$/m);
+  const title = titleMatch?.[1]?.trim() ?? '';
+  if (!title) return null;
+
+  const descMatch = content.match(/##\s+Detection\s+description\s*\n([\s\S]*?)(?=\n##\s)/i);
+  const description = descMatch?.[1]?.trim() ?? '';
+
+  // Extract category from filename suffix pattern like -Win, -Azure, -AWS
+  const fileName = filePath.split('/').pop() ?? '';
+  const categoryMatch = fileName.match(/-([A-Za-z]+)\.md$/);
+  const category = categoryMatch?.[1]
+    ? humanizeName(categoryMatch[1])
+    : 'General';
+
+  // FalconFriday uses ```C# for KQL blocks
+  const codeBlocks = extractAllFencedCodeBlocks(content);
+  if (codeBlocks.length === 0) return null;
+
+  const query = codeBlocks[0].trim();
+  if (!query) return null;
+
+  return {
+    name: title,
+    query,
+    description: description || `FalconFriday detection rule`,
+    category,
+  };
+}
+
+/**
+ * Extract all fenced code blocks regardless of language tag.
+ * Used by the FalconFriday parser since it uses ```C# for KQL.
+ */
+function extractAllFencedCodeBlocks(text: string): string[] {
+  const blocks: string[] = [];
+  const regex = /```[^\n]*\n([\s\S]*?)```/g;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(text)) !== null) {
+    if (match[1]) blocks.push(match[1]);
+  }
+  return blocks;
 }
 
 function extractFencedCodeBlocks(text: string): string[] {

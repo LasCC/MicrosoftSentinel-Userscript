@@ -105,6 +105,22 @@ export function getPinnedRules(): readonly (HuntingRule & { sourceId: RuleSource
   return result;
 }
 
+export function getCategoriesForSource(id: RuleSourceId): readonly string[] {
+  const rules = sources.get(id)?.rules ?? [];
+  const unique = new Set<string>();
+  for (const rule of rules) {
+    if (rule.category) unique.add(rule.category);
+  }
+  return [...unique].sort((a, b) => a.localeCompare(b));
+}
+
+export function filterByCategory(
+  rules: readonly HuntingRule[],
+  category: string,
+): readonly HuntingRule[] {
+  return rules.filter((r) => r.category === category);
+}
+
 export function searchRules(
   rules: readonly HuntingRule[],
   query: string,

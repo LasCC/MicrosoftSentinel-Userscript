@@ -13,7 +13,8 @@ Browse, search, pin, and inject KQL queries directly into the Monaco editor.
 ## Features
 
 - Inline "Threat Hunting Queries" button in the command bar
-- Tabs: **User Rules** (bundled), **Reprise99**, **Bert-JanP** (fetched from GitHub)
+- Tabs: **User Rules** (bundled), **Reprise99**, **Bert-JanP**, **FalconFriday** (fetched from GitHub)
+- Category filter chips for quick sub-filtering within each repo tab
 - Search across query name, description, category, and KQL content
 - Pin queries for quick access (horizontal pill bar above results)
 - Click any query row to inject it into the editor
@@ -32,8 +33,9 @@ Browse, search, pin, and inject KQL queries directly into the Monaco editor.
 |------|---------|--------|
 | [reprise99/Sentinel-Queries](https://github.com/reprise99/Sentinel-Queries) | ~460 | `.kql` files |
 | [Bert-JanP/Hunting-Queries-Detection-Rules](https://github.com/Bert-JanP/Hunting-Queries-Detection-Rules) | ~445 | `.md` with fenced KQL |
+| [FalconForceTeam/FalconFriday](https://github.com/FalconForceTeam/FalconFriday) | ~40 | `.md` with fenced KQL |
 
-Rules are fetched lazily on first tab click, cached locally for 1 hour.
+Rules are fetched lazily on first tab click, cached locally for 12 hours.
 
 ## Build
 
