@@ -1,16 +1,12 @@
 import { CSS_PREFIX } from '../config.ts';
 
 export const popupStyles = `
-  /* ── Invisible click-catcher to close on outside click ── */
-
   .${CSS_PREFIX}-popup-overlay {
     position: fixed;
     inset: 0;
     z-index: 999999;
     background: transparent;
   }
-
-  /* ── Popup panel ── */
 
   .${CSS_PREFIX}-popup {
     position: fixed;
@@ -41,8 +37,6 @@ export const popupStyles = `
       transform: translateY(0);
     }
   }
-
-  /* ── Header ── */
 
   .${CSS_PREFIX}-popup-header {
     display: flex;
@@ -89,8 +83,6 @@ export const popupStyles = `
     background: var(--colorControlBackgroundHover, #f3f2f1);
   }
 
-  /* ── Search ── */
-
   .${CSS_PREFIX}-search-wrap {
     padding: 8px 14px;
     border-bottom: 1px solid var(--colorDividerPrimary, #f3f2f1);
@@ -118,8 +110,6 @@ export const popupStyles = `
   .${CSS_PREFIX}-search-input:focus {
     border-color: var(--colorControlBorderFocus, #0078d4);
   }
-
-  /* ── Tabs ── */
 
   .${CSS_PREFIX}-tabs {
     display: flex;
@@ -151,8 +141,6 @@ export const popupStyles = `
     color: var(--colorTextBrand, #0078d4);
     border-bottom-color: var(--colorTextBrand, #0078d4);
   }
-
-  /* ── Category Filter ── */
 
   .${CSS_PREFIX}-category-filter {
     display: flex;
@@ -201,8 +189,6 @@ export const popupStyles = `
     background: var(--colorButtonBackgroundHover, #106ebe);
     border-color: var(--colorButtonBackgroundHover, #106ebe);
   }
-
-  /* ── Query List ── */
 
   .${CSS_PREFIX}-query-list {
     flex: 1;
@@ -340,8 +326,6 @@ export const popupStyles = `
     color: #ffaa44;
   }
 
-  /* ── Empty State ── */
-
   .${CSS_PREFIX}-empty {
     padding: 24px 14px;
     text-align: center;
@@ -354,8 +338,6 @@ export const popupStyles = `
     margin-bottom: 6px;
     opacity: 0.5;
   }
-
-  /* ── Loading State ── */
 
   .${CSS_PREFIX}-loading {
     padding: 24px 14px;

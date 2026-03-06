@@ -92,12 +92,10 @@ function createQueryItem(
   item.className = `${CSS_PREFIX}-query-item`;
   item.title = 'Click to inject query';
 
-  // Clicking the row injects the query (same as "Use" button)
   item.addEventListener('click', () => {
     handleUse(rule);
   });
 
-  // Body
   const body = document.createElement('div');
   body.className = `${CSS_PREFIX}-query-item-body`;
 
@@ -129,11 +127,9 @@ function createQueryItem(
   body.appendChild(descEl);
   body.appendChild(meta);
 
-  // Actions
   const actions = document.createElement('div');
   actions.className = `${CSS_PREFIX}-query-item-actions`;
 
-  // Pin button
   const pinBtn = document.createElement('button');
   pinBtn.type = 'button';
   pinBtn.className = `${CSS_PREFIX}-action-btn`;
@@ -150,7 +146,6 @@ function createQueryItem(
     dispatchPinChange();
   });
 
-  // Use button
   const useBtn = document.createElement('button');
   useBtn.type = 'button';
   useBtn.className = `${CSS_PREFIX}-action-btn ${CSS_PREFIX}-action-btn--use`;

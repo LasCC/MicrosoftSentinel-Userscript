@@ -25,19 +25,15 @@ export interface PopupComponent {
 }
 
 export function createPopup(onClose: () => void): PopupComponent {
-  // Overlay
   const overlay = document.createElement('div');
   overlay.className = `${CSS_PREFIX}-popup-overlay`;
   overlay.addEventListener('click', onClose);
 
-  // Popup container
   const popup = document.createElement('div');
   popup.className = `${CSS_PREFIX}-popup`;
 
-  // Prevent overlay click when clicking inside popup
   popup.addEventListener('click', (e) => e.stopPropagation());
 
-  // ── Header ──
   const header = document.createElement('div');
   header.className = `${CSS_PREFIX}-popup-header`;
 
@@ -63,33 +59,22 @@ export function createPopup(onClose: () => void): PopupComponent {
   header.appendChild(titleWrap);
   header.appendChild(closeBtn);
 
-  // ── Search ──
   const search: SearchComponent = createSearch(handleSearch);
-
-  // ── Tabs ──
   const tabs: TabsComponent = createTabs(handleTabChange);
-
-  // ── Category Filter ──
   const categoryFilter: CategoryFilterComponent = createCategoryFilter(handleCategoryChange);
-
-  // ── Query List ──
   const queryList: QueryListComponent = createQueryList();
-
-  // Assemble
   popup.appendChild(header);
   popup.appendChild(search.element);
   popup.appendChild(tabs.element);
   popup.appendChild(categoryFilter.element);
   popup.appendChild(queryList.element);
 
-  // ── Keyboard ──
   function handleKeydown(e: KeyboardEvent): void {
     if (e.key === 'Escape') {
       onClose();
     }
   }
 
-  // ── State Management ──
   let visible = false;
 
   function handleSearch(query: string): void {
@@ -103,7 +88,6 @@ export function createPopup(onClose: () => void): PopupComponent {
   function handleTabChange(_tabId: TabId): void {
     search.reset();
     categoryFilter.reset();
-    // Categories will be populated when renderCurrentTab runs
   }
 
   function renderCurrentTab(searchQuery = ''): void {
@@ -125,7 +109,6 @@ export function createPopup(onClose: () => void): PopupComponent {
       return;
     }
 
-    // Lazy-load repo rules on first tab visit
     const isRepoTab = REPOS.some((r) => r.id === activeTab);
     if (isRepoTab) {
       const state = getRepoLoadState(activeTab as RuleSourceId);
@@ -156,7 +139,6 @@ export function createPopup(onClose: () => void): PopupComponent {
   }
 
   function renderSourceTab(sourceId: RuleSourceId, searchQuery: string): void {
-    // Populate category chips for this source
     const categories = getCategoriesForSource(sourceId);
     categoryFilter.setCategories(categories);
 
@@ -173,15 +155,10 @@ export function createPopup(onClose: () => void): PopupComponent {
     countBadge.textContent = String(getTotalRuleCount());
   }
 
-  /**
-   * Position the popup below the anchor element (the inline button).
-   * Left-aligned to the button; clamped so it stays on-screen.
-   */
   function positionPopup(anchorEl?: HTMLElement): void {
     if (anchorEl) {
       const rect = anchorEl.getBoundingClientRect();
       const popupWidth = 420;
-      // Left-align to the button, but don't overflow the viewport
       const maxLeft = window.innerWidth - popupWidth - 8;
       popup.style.top = `${rect.bottom + 4}px`;
       popup.style.left = `${Math.max(4, Math.min(rect.left, maxLeft))}px`;
