@@ -8,6 +8,11 @@ export const popupStyles = `
     background: transparent;
   }
 
+  .${CSS_PREFIX}-popup button {
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+
   .${CSS_PREFIX}-popup {
     position: fixed;
     top: 0;
@@ -117,6 +122,13 @@ export const popupStyles = `
     padding: 0 14px;
     gap: 0;
     flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .${CSS_PREFIX}-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .${CSS_PREFIX}-tab {
