@@ -361,23 +361,91 @@ export const popupStyles = `
 
   .${CSS_PREFIX}-loading {
     padding: 24px 14px;
-    text-align: center;
     color: var(--colorTextDisabled, #a19f9d);
     font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
   }
 
-  .${CSS_PREFIX}-spinner {
+  .${CSS_PREFIX}-loading-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--colorTextPrimary, #292827);
+    display: flex;
+    align-items: center;
+  }
+
+  .${CSS_PREFIX}-loading-dots::after {
+    content: '...';
     display: inline-block;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--colorDividerPrimary, #f3f2f1);
-    border-top-color: var(--colorIconBrand, #0078d4);
-    border-radius: 50%;
-    animation: ${CSS_PREFIX}-spin 0.6s linear infinite;
-    margin-bottom: 6px;
+    width: 1.5em;
+    text-align: left;
+    animation: ${CSS_PREFIX}-loading-dots 1.2s steps(4, end) infinite;
   }
 
-  @keyframes ${CSS_PREFIX}-spin {
-    to { transform: rotate(360deg); }
+  .${CSS_PREFIX}-loading-bar {
+    width: min(100%, 240px);
+    height: 6px;
+    border-radius: 999px;
+    background: var(--colorControlBackgroundSecondary, #edebe9);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .${CSS_PREFIX}-loading-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 38%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6cb8ff 0%, #0078d4 100%);
+    animation: shq-loading-slide 1.1s ease-in-out infinite;
+  }
+
+  .${CSS_PREFIX}-loading-note {
+    max-width: 260px;
+    text-align: center;
+    line-height: 1.4;
+    color: var(--colorTextSecondary, #646464);
+  }
+
+  @keyframes shq-loading-slide {
+    0% {
+      left: -38%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+
+  @keyframes ${CSS_PREFIX}-loading-dots {
+    0% {
+      clip-path: inset(0 100% 0 0);
+    }
+    25% {
+      clip-path: inset(0 66% 0 0);
+    }
+    50% {
+      clip-path: inset(0 33% 0 0);
+    }
+    75%,
+    100% {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .${CSS_PREFIX}-loading-bar-fill {
+      animation: none;
+      left: 0;
+    }
+
+    .${CSS_PREFIX}-loading-dots::after {
+      animation: none;
+    }
   }
 `;

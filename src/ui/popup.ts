@@ -114,7 +114,7 @@ export function createPopup(onClose: () => void): PopupComponent {
       const state = getRepoLoadState(activeTab as RuleSourceId);
       if (state === 'idle' || state === 'loading') {
         categoryFilter.setCategories([]);
-        queryList.showLoading();
+        queryList.showLoading(tabDef.label);
         void ensureRepoLoaded(activeTab as RuleSourceId).then(() => {
           if (tabs.getActiveTab() === activeTab) {
             updateCount();

@@ -12,7 +12,7 @@ export interface QueryListComponent {
     showSourceBadge?: boolean,
   ): void;
   showEmpty(message: string): void;
-  showLoading(): void;
+  showLoading(sourceLabel?: string): void;
 }
 
 /** Custom event dispatched when pin state changes so the pinned bar can refresh */
@@ -52,11 +52,18 @@ export function createQueryList(): QueryListComponent {
     `;
   }
 
-  function showLoading(): void {
+  function showLoading(sourceLabel?: string): void {
+    const loadingLabel = sourceLabel
+      ? `Loading ${escapeHtml(sourceLabel)} queries`
+      : 'Loading queries';
+
     wrap.innerHTML = `
-      <div class="${CSS_PREFIX}-loading">
-        <div class="${CSS_PREFIX}-spinner"></div>
-        <div>Loading queries...</div>
+      <div class="${CSS_PREFIX}-loading" role="status" aria-live="polite">
+        <div class="${CSS_PREFIX}-loading-label">${loadingLabel}<span class="${CSS_PREFIX}-loading-dots" aria-hidden="true"></span></div>
+        <div class="${CSS_PREFIX}-loading-bar" aria-hidden="true">
+          <div class="${CSS_PREFIX}-loading-bar-fill"></div>
+        </div>
+        <div class="${CSS_PREFIX}-loading-note">Cached locally for 12 hours to speed up future loads.</div>
       </div>
     `;
   }
@@ -174,4 +181,13 @@ function updatePinButton(
   btn.textContent = pinned ? '\u{1F4CC}' : '\u{1F4CD}';
   btn.title = pinned ? 'Unpin' : 'Pin';
   btn.classList.toggle(`${CSS_PREFIX}-action-btn--pinned`, pinned);
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
