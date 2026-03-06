@@ -156,13 +156,14 @@ export const popupStyles = `
 
   .${CSS_PREFIX}-category-filter {
     display: flex;
-    gap: 4px;
-    padding: 6px 14px;
+    gap: 3px;
+    padding: 3px 14px 4px;
     border-bottom: 1px solid var(--colorDividerPrimary, #f3f2f1);
     flex-shrink: 0;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
+    align-items: center;
   }
 
   .${CSS_PREFIX}-category-filter::-webkit-scrollbar {
@@ -170,36 +171,43 @@ export const popupStyles = `
   }
 
   .${CSS_PREFIX}-category-chip {
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--colorTextSecondary, #646464);
-    background: var(--colorContainerBackgroundSecondary, #f3f2f1);
-    border: 1px solid var(--colorContainerBorderPrimary, #e1dfdd);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: color 0.12s, background 0.12s, border-color 0.12s;
-    font-family: inherit;
-    white-space: nowrap;
-    flex-shrink: 0;
+    padding: 1px 7px !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    color: var(--colorTextSecondary, #646464) !important;
+    background: transparent !important;
+    border: 1px solid var(--colorContainerBorderPrimary, #e1dfdd) !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: color 0.12s, background 0.12s, border-color 0.12s !important;
+    font-family: inherit !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    line-height: 1.6 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    letter-spacing: 0.01em !important;
+    text-transform: none !important;
   }
 
   .${CSS_PREFIX}-category-chip:hover {
-    color: var(--colorTextPrimary, #292827);
-    background: var(--colorControlBackgroundHover, #e8e8e8);
-    border-color: var(--colorControlBorderSecondary, #d6d6d6);
+    color: var(--colorTextPrimary, #292827) !important;
+    background: var(--colorControlBackgroundHover, #f3f2f1) !important;
+    border-color: var(--colorControlBorderSecondary, #c8c6c4) !important;
   }
 
   .${CSS_PREFIX}-category-chip--active {
-    color: var(--colorButtonForegroundPrimary, #fff);
-    background: var(--colorButtonBackgroundPrimary, #0078d4);
-    border-color: var(--colorButtonBackgroundPrimary, #0078d4);
+    color: var(--colorTextBrand, #0078d4) !important;
+    background: var(--colorContainerBackgroundInfo, #e6f2fb) !important;
+    border-color: var(--colorControlBorderInfo, #0078d4) !important;
+    font-weight: 600 !important;
   }
 
   .${CSS_PREFIX}-category-chip--active:hover {
-    color: var(--colorButtonForegroundPrimary, #fff);
-    background: var(--colorButtonBackgroundHover, #106ebe);
-    border-color: var(--colorButtonBackgroundHover, #106ebe);
+    color: var(--colorLinkContrast, #005a9e) !important;
+    background: var(--colorButtonBackgroundTertiary, #d0e6f9) !important;
+    border-color: var(--colorLinkContrast, #005a9e) !important;
   }
 
   .${CSS_PREFIX}-query-list {
