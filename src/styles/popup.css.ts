@@ -215,6 +215,18 @@ export const popupStyles = `
     overflow-y: auto;
     padding: 2px 0;
     min-height: 0;
+    position: relative;
+  }
+
+  .${CSS_PREFIX}-query-list-spacer {
+    width: 100%;
+    pointer-events: none;
+  }
+
+  .${CSS_PREFIX}-query-list-viewport {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
 
   .${CSS_PREFIX}-query-list::-webkit-scrollbar {
@@ -232,18 +244,29 @@ export const popupStyles = `
 
   .${CSS_PREFIX}-query-item {
     display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: auto;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--colorDividerSecondary, #edebe9);
+  }
+
+  .${CSS_PREFIX}-query-item-header {
+    display: flex;
     align-items: flex-start;
-    padding: 7px 14px;
-    gap: 8px;
+    padding: 10px 14px;
+    gap: 10px;
     cursor: pointer;
     transition: background 0.1s;
   }
 
-  .${CSS_PREFIX}-query-item:hover {
+  .${CSS_PREFIX}-query-item-header:hover {
     background: var(--colorControlBackgroundHover, #f3f2f1);
   }
 
-  .${CSS_PREFIX}-query-item:active {
+  .${CSS_PREFIX}-query-item-header:active {
     background: var(--colorControlBackgroundPressed, #edebe9);
   }
 
@@ -256,7 +279,7 @@ export const popupStyles = `
     font-size: 12px;
     font-weight: 600;
     color: var(--colorTextPrimary, #292827);
-    margin-bottom: 1px;
+    margin-bottom: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -275,8 +298,39 @@ export const popupStyles = `
   .${CSS_PREFIX}-query-item-meta {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 4px;
     margin-top: 3px;
+  }
+
+  .${CSS_PREFIX}-query-item-preview {
+    margin: 0 14px 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--colorNeutralStroke2, #d6d6d6);
+    background: var(--colorNeutralBackground2, #faf9f8);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .${CSS_PREFIX}-query-item-preview-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--colorTextSecondary, #646464);
+    margin-bottom: 6px;
+  }
+
+  .${CSS_PREFIX}-query-item-preview-code {
+    margin: 0;
+    max-height: 120px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--colorTextPrimary, #292827);
+    font-family: Consolas, Monaco, 'Courier New', monospace;
   }
 
   .${CSS_PREFIX}-badge {
@@ -297,53 +351,68 @@ export const popupStyles = `
   }
 
   .${CSS_PREFIX}-query-item-actions {
-    display: flex;
-    gap: 2px;
-    flex-shrink: 0;
-    align-items: center;
-    padding-top: 1px;
-    opacity: 0;
-    transition: opacity 0.12s;
+    display: flex !important;
+    gap: 2px !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
   }
 
-  .${CSS_PREFIX}-query-item:hover .${CSS_PREFIX}-query-item-actions {
-    opacity: 1;
+  .${CSS_PREFIX}-icon-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    color: var(--colorTextDisabled, #a19f9d) !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+    transition: color 0.12s, background 0.12s !important;
+    user-select: none !important;
   }
 
-  .${CSS_PREFIX}-action-btn {
-    background: none;
-    border: 1px solid transparent;
-    color: var(--colorTextDisabled, #a19f9d);
-    cursor: pointer;
-    padding: 3px 5px;
-    border-radius: 2px;
-    font-size: 12px;
-    transition: color 0.12s, background 0.12s, border-color 0.12s;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-family: inherit;
-    white-space: nowrap;
+  .${CSS_PREFIX}-icon-btn:hover {
+    color: var(--colorTextPrimary, #292827) !important;
+    background: var(--colorControlBackgroundHover, rgba(0,0,0,0.05)) !important;
   }
 
-  .${CSS_PREFIX}-action-btn:hover {
-    color: var(--colorTextPrimary, #292827);
-    background: var(--colorControlBackgroundHover, #f3f2f1);
-    border-color: var(--colorControlBorderSecondary, #d6d6d6);
+  .${CSS_PREFIX}-icon-btn:focus-visible {
+    outline: 2px solid var(--colorControlBorderInfo, #015cda) !important;
+    outline-offset: -2px !important;
   }
 
-  .${CSS_PREFIX}-action-btn--use {
-    color: var(--colorTextBrand, #0078d4);
-    font-weight: 600;
+  .${CSS_PREFIX}-icon-btn--pinned {
+    color: #ffaa44 !important;
   }
 
-  .${CSS_PREFIX}-action-btn--use:hover {
-    background: var(--colorButtonBackgroundTertiary, #e6f2fb);
-    color: var(--colorLinkContrast, #005a9e);
+  .${CSS_PREFIX}-icon-btn--pinned:hover {
+    color: #e89520 !important;
   }
 
-  .${CSS_PREFIX}-action-btn--pinned {
-    color: #ffaa44;
+  .${CSS_PREFIX}-icon-btn--chevron svg {
+    display: block !important;
+    width: 11px !important;
+    height: 11px !important;
+    min-width: 11px !important;
+    min-height: 11px !important;
+    max-width: 11px !important;
+    max-height: 11px !important;
+    fill: none !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
+    transition: transform 0.15s ease !important;
+  }
+
+  .${CSS_PREFIX}-icon-btn--chevron-open svg {
+    transform: rotate(180deg) !important;
   }
 
   .${CSS_PREFIX}-empty {
@@ -446,6 +515,12 @@ export const popupStyles = `
 
     .${CSS_PREFIX}-loading-dots::after {
       animation: none;
+    }
+
+    .${CSS_PREFIX}-query-item-header,
+    .${CSS_PREFIX}-icon-btn,
+    .${CSS_PREFIX}-icon-btn--chevron svg {
+      transition: none !important;
     }
   }
 `;

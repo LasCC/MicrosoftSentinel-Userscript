@@ -78,14 +78,17 @@ export function createPopup(onClose: () => void): PopupComponent {
   let visible = false;
 
   function handleSearch(query: string): void {
+    queryList.resetScroll();
     renderCurrentTab(query);
   }
 
   function handleCategoryChange(_category: string | null): void {
+    queryList.resetScroll();
     renderCurrentTab(search.getQuery());
   }
 
   function handleTabChange(_tabId: TabId): void {
+    queryList.resetScroll();
     search.reset();
     categoryFilter.reset();
   }
