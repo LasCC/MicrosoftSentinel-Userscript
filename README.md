@@ -1,3 +1,5 @@
+[![SentinelOne Userscript](https://img.shields.io/badge/Also%20available-SentinelOne%20PowerQuery%20Userscript-6C2EB9?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyTDIgMTJsMTAgMTAgMTAtMTBMMTIgMnoiLz48L3N2Zz4=)](https://github.com/LasCC/SentinelOne-Userscript)
+
 # Microsoft Sentinel & Defender: Threat Hunting Queries
 
 Tampermonkey userscript that adds a threat hunting query menu to **Microsoft Sentinel** and **Microsoft Defender** Advanced Hunting pages.
