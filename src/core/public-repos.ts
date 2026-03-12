@@ -29,11 +29,18 @@ interface TreeCache {
 
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
 
+export interface RepoLoadProgress {
+  readonly completed: number;
+  readonly total: number | null;
+  readonly percent: number | null;
+}
+
 // ── Per-repo State ──
 
 const repoRules: Map<RuleSourceId, HuntingRule[]> = new Map();
 const repoLoadState: Map<RuleSourceId, LoadState> = new Map();
 const repoLoadPromise: Map<RuleSourceId, Promise<void>> = new Map();
+const repoLoadProgress: Map<RuleSourceId, RepoLoadProgress> = new Map();
 
 // ── Public API ──
 
@@ -43,6 +50,10 @@ export function getRepoRules(repoId: RuleSourceId): readonly HuntingRule[] {
 
 export function getRepoLoadState(repoId: RuleSourceId): LoadState {
   return repoLoadState.get(repoId) ?? 'idle';
+}
+
+export function getRepoLoadProgress(repoId: RuleSourceId): RepoLoadProgress | null {
+  return repoLoadProgress.get(repoId) ?? null;
 }
 
 /**
@@ -59,10 +70,13 @@ export function fetchRepoRules(repoId: RuleSourceId): Promise<void> {
   if (!config) return Promise.resolve();
 
   repoLoadState.set(repoId, 'loading');
+  setRepoLoadProgress(repoId, 0, null);
   const promise = fetchRepo(config)
     .then((rules) => {
       repoRules.set(repoId, rules);
       repoLoadState.set(repoId, 'loaded');
+      const finalTotal = repoLoadProgress.get(repoId)?.total ?? rules.length;
+      setRepoLoadProgress(repoId, finalTotal, finalTotal);
       const cacheKey = `${STORAGE_KEYS.REPO_RULES_CACHE}_${repoId}`;
       setCache(cacheKey, rules);
     })
@@ -111,7 +125,11 @@ async function fetchRepo(config: RepoConfig): Promise<HuntingRule[]> {
       (config.basePath === '' || entry.path.startsWith(config.basePath)),
   );
 
-  const rules = await fetchFilesInBatches(matchingEntries, config);
+  setRepoLoadProgress(config.id, 0, matchingEntries.length);
+
+  const rules = await fetchFilesInBatches(matchingEntries, config, (completed, total) => {
+    setRepoLoadProgress(config.id, completed, total);
+  });
 
   setCache(treeCacheKey, { sha: treeResponse.sha, rules } satisfies TreeCache);
 
@@ -126,14 +144,23 @@ function fetchGitHubTree(config: RepoConfig): Promise<GitHubTreeResponse> {
 async function fetchFilesInBatches(
   entries: readonly GitHubTreeEntry[],
   config: RepoConfig,
+  onProgress: (completed: number, total: number) => void,
 ): Promise<HuntingRule[]> {
   const rules: HuntingRule[] = [];
   const batches = chunk(entries, PUBLIC_FETCH_CONCURRENCY);
+  let completed = 0;
+
+  if (entries.length === 0) {
+    onProgress(0, 0);
+    return rules;
+  }
 
   for (const batch of batches) {
     const results = await Promise.allSettled(
       batch.map((entry) => fetchAndParseFile(entry, config)),
     );
+    completed += batch.length;
+    onProgress(completed, entries.length);
     for (const result of results) {
       if (result.status === 'fulfilled' && result.value) {
         if (Array.isArray(result.value)) {
@@ -370,4 +397,21 @@ function gmFetchText(url: string): Promise<string> {
       timeout: PUBLIC_FETCH_TIMEOUT,
     });
   });
+}
+
+function setRepoLoadProgress(repoId: RuleSourceId, completed: number, total: number | null): void {
+  const percent = total && total > 0
+    ? Math.min(100, Math.round((completed / total) * 100))
+    : total === 0
+      ? 100
+      : null;
+
+  const progress: RepoLoadProgress = { completed, total, percent };
+  repoLoadProgress.set(repoId, progress);
+
+  if (typeof document !== 'undefined') {
+    document.dispatchEvent(new CustomEvent('shq:repo-progress', {
+      detail: { repoId, progress },
+    }));
+  }
 }

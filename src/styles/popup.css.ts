@@ -143,6 +143,14 @@ export const popupStyles = `
     transition: color 0.12s, border-color 0.12s;
     font-family: inherit;
     white-space: nowrap;
+    outline: none;
+    box-shadow: none;
+  }
+
+  .${CSS_PREFIX}-tab:focus,
+  .${CSS_PREFIX}-tab:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .${CSS_PREFIX}-tab:hover {
@@ -189,6 +197,14 @@ export const popupStyles = `
     height: auto !important;
     letter-spacing: 0.01em !important;
     text-transform: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .${CSS_PREFIX}-category-chip:focus,
+  .${CSS_PREFIX}-category-chip:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .${CSS_PREFIX}-category-chip:hover {
@@ -384,6 +400,19 @@ export const popupStyles = `
     background: var(--colorControlBackgroundHover, rgba(0,0,0,0.05)) !important;
   }
 
+  .${CSS_PREFIX}-icon-btn svg {
+    display: block !important;
+    width: 14px !important;
+    height: 14px !important;
+    min-width: 14px !important;
+    min-height: 14px !important;
+    max-width: 14px !important;
+    max-height: 14px !important;
+    fill: none !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
+  }
+
   .${CSS_PREFIX}-icon-btn:focus-visible {
     outline: 2px solid var(--colorControlBorderInfo, #015cda) !important;
     outline-offset: -2px !important;
@@ -439,6 +468,44 @@ export const popupStyles = `
     justify-content: center;
   }
 
+  .${CSS_PREFIX}-loading-spinner-wrap {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+  }
+
+  .${CSS_PREFIX}-loading-spinner {
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    border: 4px solid var(--colorControlBackgroundSecondary, #edebe9);
+    border-top-color: var(--colorTextBrand, #0078d4);
+    border-right-color: rgba(0, 120, 212, 0.35);
+    animation-name: ${CSS_PREFIX}-loading-spin !important;
+    animation-duration: 0.8s !important;
+    animation-timing-function: linear !important;
+    animation-iteration-count: infinite !important;
+    -webkit-animation-name: ${CSS_PREFIX}-loading-spin !important;
+    -webkit-animation-duration: 0.8s !important;
+    -webkit-animation-timing-function: linear !important;
+    -webkit-animation-iteration-count: infinite !important;
+    transform-origin: center;
+    will-change: transform;
+  }
+
+  .${CSS_PREFIX}-loading-progress {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--colorTextPrimary, #292827);
+    letter-spacing: 0.01em;
+  }
+
   .${CSS_PREFIX}-loading-label {
     font-size: 12px;
     font-weight: 600;
@@ -455,26 +522,6 @@ export const popupStyles = `
     animation: ${CSS_PREFIX}-loading-dots 1.2s steps(4, end) infinite;
   }
 
-  .${CSS_PREFIX}-loading-bar {
-    width: min(100%, 240px);
-    height: 6px;
-    border-radius: 999px;
-    background: var(--colorControlBackgroundSecondary, #edebe9);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .${CSS_PREFIX}-loading-bar-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 38%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #6cb8ff 0%, #0078d4 100%);
-    animation: shq-loading-slide 1.1s ease-in-out infinite;
-  }
-
   .${CSS_PREFIX}-loading-note {
     max-width: 260px;
     text-align: center;
@@ -482,12 +529,12 @@ export const popupStyles = `
     color: var(--colorTextSecondary, #646464);
   }
 
-  @keyframes shq-loading-slide {
+  @keyframes ${CSS_PREFIX}-loading-spin {
     0% {
-      left: -38%;
+      transform: rotate(0deg);
     }
     100% {
-      left: 100%;
+      transform: rotate(360deg);
     }
   }
 
@@ -508,9 +555,9 @@ export const popupStyles = `
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .${CSS_PREFIX}-loading-bar-fill {
+    .${CSS_PREFIX}-loading-spinner {
       animation: none;
-      left: 0;
+      border-top-color: var(--colorControlBorderInfo, #015cda);
     }
 
     .${CSS_PREFIX}-loading-dots::after {

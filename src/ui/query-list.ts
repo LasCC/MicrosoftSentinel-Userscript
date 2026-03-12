@@ -23,7 +23,7 @@ export interface QueryListComponent {
     showSourceBadge?: boolean,
   ): void;
   showEmpty(message: string): void;
-  showLoading(sourceLabel?: string): void;
+  showLoading(sourceLabel?: string, progressPercent?: number | null): void;
   resetScroll(): void;
 }
 
@@ -125,7 +125,7 @@ export function createQueryList(): QueryListComponent {
     `;
   }
 
-  function showLoading(sourceLabel?: string): void {
+  function showLoading(sourceLabel?: string, progressPercent: number | null = null): void {
     visibleItems = [];
     visibleShowSourceBadge = false;
     clearPendingRender();
@@ -141,12 +141,20 @@ export function createQueryList(): QueryListComponent {
       ? `Loading ${escapeHtml(sourceLabel)} queries`
       : 'Loading queries';
 
+    const progressText = Number.isFinite(progressPercent)
+      ? `${Math.max(0, Math.min(100, Math.round(progressPercent ?? 0)))}%`
+      : '';
+    const progressMarkup = progressText
+      ? `<div class="${CSS_PREFIX}-loading-progress" aria-live="polite">${progressText}</div>`
+      : '';
+
     message.innerHTML = `
       <div class="${CSS_PREFIX}-loading" role="status" aria-live="polite">
-        <div class="${CSS_PREFIX}-loading-label">${loadingLabel}<span class="${CSS_PREFIX}-loading-dots" aria-hidden="true"></span></div>
-        <div class="${CSS_PREFIX}-loading-bar" aria-hidden="true">
-          <div class="${CSS_PREFIX}-loading-bar-fill"></div>
+        <div class="${CSS_PREFIX}-loading-spinner-wrap" aria-hidden="true">
+          <div class="${CSS_PREFIX}-loading-spinner"></div>
+          ${progressMarkup}
         </div>
+        <div class="${CSS_PREFIX}-loading-label">${loadingLabel}<span class="${CSS_PREFIX}-loading-dots" aria-hidden="true"></span></div>
         <div class="${CSS_PREFIX}-loading-note">Cached locally for 12 hours to speed up future loads.</div>
       </div>
     `;
@@ -327,17 +335,12 @@ function createQueryItem(
   const actions = document.createElement('div');
   actions.className = `${CSS_PREFIX}-query-item-actions`;
 
-  const pinBtn = createIconButton(
-    isPinned(rule.name, sourceId) ? '\u{1F4CC}' : '\u{1F4CD}',
-    isPinned(rule.name, sourceId) ? 'Unpin' : 'Pin',
-  );
-  if (isPinned(rule.name, sourceId)) pinBtn.classList.add(`${CSS_PREFIX}-icon-btn--pinned`);
+  const pinBtn = createIconButton('', 'Pin');
+  setPinButtonState(pinBtn, isPinned(rule.name, sourceId));
   pinBtn.addEventListener('click', (event) => {
     event.stopPropagation();
     const pinned = togglePin(rule.name, sourceId);
-    pinBtn.textContent = pinned ? '\u{1F4CC}' : '\u{1F4CD}';
-    pinBtn.title = pinned ? 'Unpin' : 'Pin';
-    pinBtn.classList.toggle(`${CSS_PREFIX}-icon-btn--pinned`, pinned);
+    setPinButtonState(pinBtn, pinned);
     showToast(
       pinned ? `Pinned: ${rule.name}` : `Unpinned: ${rule.name}`,
       'info',
@@ -410,6 +413,13 @@ function createIconButton(label: string, title: string): HTMLDivElement {
   return el;
 }
 
+function setPinButtonState(button: HTMLDivElement, pinned: boolean): void {
+  button.classList.toggle(`${CSS_PREFIX}-icon-btn--pinned`, pinned);
+  button.title = pinned ? 'Unpin' : 'Pin';
+  button.setAttribute('aria-label', pinned ? 'Unpin query' : 'Pin query');
+  button.replaceChildren(createPinIconSvg(pinned));
+}
+
 function createRuleKey(name: string, sourceId: RuleSourceId): string {
   return `${sourceId}:${name}`;
 }
@@ -470,6 +480,26 @@ function createChevronSvg(): SVGSVGElement {
   path.setAttribute('stroke-linejoin', 'round');
 
   svg.appendChild(path);
+  return svg;
+}
+
+function createPinIconSvg(pinned: boolean): SVGSVGElement {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute(
+    'd',
+    pinned
+      ? 'm21.068 7.758-4.826-4.826a2.75 2.75 0 0 0-4.404.715l-2.435 4.87a.75.75 0 0 1-.426.374L4.81 10.33a1.25 1.25 0 0 0-.476 2.065L7.439 15.5 3 19.94V21h1.06l4.44-4.44 3.104 3.105a1.25 1.25 0 0 0 2.066-.476l1.44-4.166a.75.75 0 0 1 .373-.426l4.87-2.435a2.75 2.75 0 0 0 .715-4.404Z'
+      : 'M3.28 2.22a.75.75 0 0 0-1.06 1.06l5.905 5.905L4.81 10.33a1.25 1.25 0 0 0-.476 2.065L7.439 15.5 3 19.94V21h1.06l4.44-4.44 3.105 3.105a1.25 1.25 0 0 0 2.065-.476l1.145-3.313 5.905 5.904a.75.75 0 0 0 1.06-1.06L3.28 2.22Zm17.074 9.942-3.34 1.67-6.846-6.846 1.67-3.34a2.75 2.75 0 0 1 4.405-.714l4.825 4.826a2.75 2.75 0 0 1-.714 4.404Z',
+  );
+  path.setAttribute('fill', 'currentColor');
+  svg.appendChild(path);
+
   return svg;
 }
 

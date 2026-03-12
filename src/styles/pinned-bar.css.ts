@@ -74,9 +74,21 @@ export const pinnedBarStyles = `
   }
 
   .${CSS_PREFIX}-pill-pin {
-    font-size: 11px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 13px !important;
+    height: 13px !important;
     line-height: 1 !important;
     flex-shrink: 0 !important;
+    color: var(--colorTextBrand, #0078d4) !important;
+  }
+
+  .${CSS_PREFIX}-pill-pin svg {
+    width: 13px !important;
+    height: 13px !important;
+    display: block !important;
+    fill: none !important;
   }
 
   .${CSS_PREFIX}-pill-name {

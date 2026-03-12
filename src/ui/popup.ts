@@ -9,7 +9,7 @@ import {
   getTotalRuleCount,
   ensureRepoLoaded,
 } from '../core/query-manager.ts';
-import { getRepoLoadState } from '../core/public-repos.ts';
+import { getRepoLoadProgress, getRepoLoadState } from '../core/public-repos.ts';
 import { createSearch, type SearchComponent } from './search.ts';
 import { createTabs, type TabsComponent } from './tabs.ts';
 import { createQueryList, type QueryListComponent } from './query-list.ts';
@@ -77,6 +77,28 @@ export function createPopup(onClose: () => void): PopupComponent {
 
   let visible = false;
 
+  function getRepoTabLabel(repoId: RuleSourceId): string {
+    return TABS.find((tab) => tab.id === repoId)?.label ?? repoId;
+  }
+
+  function updateLoadingUI(repoId: RuleSourceId): void {
+    if (!visible) return;
+    if (tabs.getActiveTab() !== repoId) return;
+
+    const state = getRepoLoadState(repoId);
+    if (state !== 'idle' && state !== 'loading') return;
+
+    const progressPercent = getRepoLoadProgress(repoId)?.percent ?? null;
+    queryList.showLoading(getRepoTabLabel(repoId), progressPercent);
+  }
+
+  function handleRepoProgress(event: Event): void {
+    const customEvent = event as CustomEvent<{ repoId?: RuleSourceId }>;
+    const repoId = customEvent.detail?.repoId;
+    if (!repoId) return;
+    updateLoadingUI(repoId);
+  }
+
   function handleSearch(query: string): void {
     queryList.resetScroll();
     renderCurrentTab(query);
@@ -114,20 +136,21 @@ export function createPopup(onClose: () => void): PopupComponent {
 
     const isRepoTab = REPOS.some((r) => r.id === activeTab);
     if (isRepoTab) {
-      const state = getRepoLoadState(activeTab as RuleSourceId);
+      const repoId = activeTab as RuleSourceId;
+      const state = getRepoLoadState(repoId);
       if (state === 'idle' || state === 'loading') {
         categoryFilter.setCategories([]);
-        queryList.showLoading(tabDef.label);
-        void ensureRepoLoaded(activeTab as RuleSourceId).then(() => {
+        updateLoadingUI(repoId);
+        void ensureRepoLoaded(repoId).then(() => {
           if (tabs.getActiveTab() === activeTab) {
             updateCount();
-            renderSourceTab(activeTab as RuleSourceId, searchQuery);
+            renderSourceTab(repoId, searchQuery);
           }
         });
         return;
       }
       if (state === 'error') {
-        const rules = getRulesForSource(activeTab as RuleSourceId);
+        const rules = getRulesForSource(repoId);
         if (rules.length === 0) {
           categoryFilter.setCategories([]);
           queryList.showEmpty('Failed to load rules. Try again later.');
@@ -177,6 +200,7 @@ export function createPopup(onClose: () => void): PopupComponent {
     visible = true;
     document.body.appendChild(overlay);
     document.body.appendChild(popup);
+    document.addEventListener('shq:repo-progress', handleRepoProgress as EventListener);
     positionPopup(anchorEl);
     document.addEventListener('keydown', handleKeydown);
     updateCount();
@@ -187,6 +211,7 @@ export function createPopup(onClose: () => void): PopupComponent {
   function hide(): void {
     if (!visible) return;
     visible = false;
+    document.removeEventListener('shq:repo-progress', handleRepoProgress as EventListener);
     document.removeEventListener('keydown', handleKeydown);
     overlay.remove();
     popup.remove();
